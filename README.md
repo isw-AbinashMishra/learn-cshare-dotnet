@@ -27,6 +27,16 @@ npm run dev
 
 Then open [http://localhost:5173](http://localhost:5173).
 
+### Playground "Run" (local only)
+
+The Code Playground section can execute snippets for real using your locally installed .NET SDK, via a small local sidecar server. This only works when running locally — it is not available in the production build.
+
+```bash
+dotnet tool install -g dotnet-script   # once
+cd portal
+npm run server                         # in a separate terminal, alongside `npm run dev`
+```
+
 ### Build for production
 
 ```bash

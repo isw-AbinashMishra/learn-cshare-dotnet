@@ -185,12 +185,33 @@ export default function App() {
           )}
 
           {mode === "playground" && (
-            visibleSnippets.length === 0
-              ? <EmptyState onClear={() => setSearch("")} />
-              : visibleSnippets.map((s) => <PlaygroundCard key={s.id} snippet={s} />)
+            <>
+              {visibleSnippets.length === 0
+                ? <EmptyState onClear={() => setSearch("")} />
+                : visibleSnippets.map((s) => <PlaygroundCard key={s.id} snippet={s} />)}
+              <PlaygroundFooter />
+            </>
           )}
         </div>
       </main>
+    </div>
+  );
+}
+
+function PlaygroundFooter() {
+  return (
+    <div className="mt-2 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))]/50 px-4 py-3 text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">
+      <p className="font-semibold text-[hsl(var(--foreground))] mb-1">Running code locally</p>
+      <p>
+        "Run" executes the snippet on your machine via a local server that shells out to{" "}
+        <code className="text-[hsl(var(--primary))]">dotnet-script</code>. This only works when running the
+        portal locally, not on a public deployment:
+      </p>
+      <ol className="list-decimal list-inside mt-1.5 space-y-0.5">
+        <li>Install once: <code className="text-[hsl(var(--primary))]">dotnet tool install -g dotnet-script</code></li>
+        <li>In <code className="text-[hsl(var(--primary))]">portal/</code>, run <code className="text-[hsl(var(--primary))]">npm run server</code> (starts on port 5100)</li>
+        <li>Keep <code className="text-[hsl(var(--primary))]">npm run dev</code> running in another terminal, then hit Run</li>
+      </ol>
     </div>
   );
 }
