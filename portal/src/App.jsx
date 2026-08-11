@@ -12,7 +12,7 @@ import ModeToggle from "./components/ModeToggle";
 import "./App.css";
 
 export default function App() {
-  const [mode, setMode] = useState("prep"); // "prep" | "challenges" | "playground"
+  const [mode, setMode] = useState("prep");
   const [activeCategory, setActiveCategory] = useState(null);
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState("");
@@ -20,10 +20,7 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const { reviewed, toggle, reset } = useProgress();
-  const {
-    reviewed: solved,
-    toggle: toggleSolved,
-  } = useProgress("solved_challenges");
+  const { reviewed: solved, toggle: toggleSolved } = useProgress("solved_challenges");
 
   const handleModeChange = (newMode) => {
     setMode(newMode);
@@ -33,7 +30,6 @@ export default function App() {
     setHideReviewed(false);
   };
 
-  // --- Interview Prep filter ---
   const visibleQuestions = useMemo(() => {
     return questions.filter((q) => {
       if (activeCategory && q.category !== activeCategory) return false;
@@ -52,7 +48,6 @@ export default function App() {
     });
   }, [activeCategory, search, difficulty, hideReviewed, reviewed]);
 
-  // --- Challenges filter ---
   const visibleChallenges = useMemo(() => {
     return challenges.filter((c) => {
       if (activeCategory && c.category !== activeCategory) return false;
@@ -71,7 +66,6 @@ export default function App() {
     });
   }, [activeCategory, search, difficulty, hideReviewed, solved]);
 
-  // --- Playground filter ---
   const visibleSnippets = useMemo(() => {
     return snippets.filter((s) => {
       if (activeCategory && s.category !== activeCategory) return false;
@@ -92,25 +86,13 @@ export default function App() {
   };
 
   const currentCategories =
-    mode === "prep"
-      ? categories
-      : mode === "challenges"
-      ? challengeCategories
-      : playgroundCategories;
+    mode === "prep" ? categories : mode === "challenges" ? challengeCategories : playgroundCategories;
 
   const currentTotal =
-    mode === "prep"
-      ? questions.length
-      : mode === "challenges"
-      ? challenges.length
-      : snippets.length;
+    mode === "prep" ? questions.length : mode === "challenges" ? challenges.length : snippets.length;
 
   const currentVisible =
-    mode === "prep"
-      ? visibleQuestions.length
-      : mode === "challenges"
-      ? visibleChallenges.length
-      : visibleSnippets.length;
+    mode === "prep" ? visibleQuestions.length : mode === "challenges" ? visibleChallenges.length : visibleSnippets.length;
 
   const headerTitle =
     mode === "playground"
@@ -120,35 +102,38 @@ export default function App() {
       : (activeCategory ?? "All Topics");
 
   return (
-    <div className="layout">
+    <div className="flex min-h-screen bg-[hsl(var(--background))]">
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="overlay" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 bg-black/60 z-[99] md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
       <Sidebar
         mode={mode}
         activeCategory={activeCategory}
-        onSelect={(cat) => {
-          setActiveCategory(cat);
-          setSidebarOpen(false);
-        }}
+        onSelect={(cat) => { setActiveCategory(cat); setSidebarOpen(false); }}
         reviewed={mode === "challenges" ? solved : reviewed}
         categories={currentCategories}
         totalItems={currentTotal}
-        className={sidebarOpen ? "sidebar--open" : ""}
+        isOpen={sidebarOpen}
       />
 
-      <main className="main">
-        <header className="main__header">
+      <main className="flex-1 min-w-0 flex flex-col">
+        {/* Header */}
+        <header className="sticky top-0 z-10 bg-[hsl(var(--background))]/95 backdrop-blur border-b border-[hsl(var(--border))] px-4 md:px-6 py-3 flex items-center gap-3">
           <button
-            className="hamburger"
+            className="md:hidden p-1.5 rounded-md text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--accent))] transition-colors"
             onClick={() => setSidebarOpen((o) => !o)}
             aria-label="Toggle navigation"
           >
-            ☰
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
           </button>
-          <h1 className="main__title">{headerTitle}</h1>
+          <h1 className="text-lg font-semibold text-[hsl(var(--foreground))] truncate">{headerTitle}</h1>
         </header>
 
         <ModeToggle mode={mode} onChange={handleModeChange} />
@@ -169,61 +154,40 @@ export default function App() {
         )}
 
         {mode === "playground" && (
-          <div className="toolbar">
+          <div className="flex flex-wrap gap-3 items-center px-4 md:px-6 py-3 border-b border-[hsl(var(--border))]">
             <input
-              className="toolbar__search"
+              className="flex-1 min-w-[200px] bg-[hsl(var(--input))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[hsl(var(--ring))] focus:ring-offset-0 placeholder:text-[hsl(var(--muted-foreground))] transition"
               placeholder="Search snippets…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <span className="toolbar__count">
+            <span className="text-xs text-[hsl(var(--muted-foreground))]">
               {currentVisible} / {currentTotal} snippets
             </span>
           </div>
         )}
 
-        <div className="question-list">
-          {/* ── Interview Prep ── */}
+        <div className="flex flex-col gap-3 p-4 md:p-6 max-w-[900px] w-full mx-auto">
           {mode === "prep" && (
-            visibleQuestions.length === 0 ? (
-              <EmptyState onClear={() => { setSearch(""); setDifficulty(""); setHideReviewed(false); }} />
-            ) : (
-              visibleQuestions.map((q) => (
-                <QuestionCard
-                  key={q.id}
-                  question={q}
-                  isReviewed={reviewed.has(q.id)}
-                  onToggle={toggle}
-                />
-              ))
-            )
+            visibleQuestions.length === 0
+              ? <EmptyState onClear={() => { setSearch(""); setDifficulty(""); setHideReviewed(false); }} />
+              : visibleQuestions.map((q) => (
+                  <QuestionCard key={q.id} question={q} isReviewed={reviewed.has(q.id)} onToggle={toggle} />
+                ))
           )}
 
-          {/* ── Challenges ── */}
           {mode === "challenges" && (
-            visibleChallenges.length === 0 ? (
-              <EmptyState onClear={() => { setSearch(""); setDifficulty(""); setHideReviewed(false); }} />
-            ) : (
-              visibleChallenges.map((c) => (
-                <ChallengeCard
-                  key={c.id}
-                  challenge={c}
-                  isSolved={solved.has(c.id)}
-                  onToggle={toggleSolved}
-                />
-              ))
-            )
+            visibleChallenges.length === 0
+              ? <EmptyState onClear={() => { setSearch(""); setDifficulty(""); setHideReviewed(false); }} />
+              : visibleChallenges.map((c) => (
+                  <ChallengeCard key={c.id} challenge={c} isSolved={solved.has(c.id)} onToggle={toggleSolved} />
+                ))
           )}
 
-          {/* ── Playground ── */}
           {mode === "playground" && (
-            visibleSnippets.length === 0 ? (
-              <EmptyState onClear={() => setSearch("")} />
-            ) : (
-              visibleSnippets.map((s) => (
-                <PlaygroundCard key={s.id} snippet={s} />
-              ))
-            )
+            visibleSnippets.length === 0
+              ? <EmptyState onClear={() => setSearch("")} />
+              : visibleSnippets.map((s) => <PlaygroundCard key={s.id} snippet={s} />)
           )}
         </div>
       </main>
@@ -233,10 +197,13 @@ export default function App() {
 
 function EmptyState({ onClear }) {
   return (
-    <div className="empty-state">
-      <span className="empty-state__icon">🔍</span>
-      <p>Nothing matches your filters.</p>
-      <button className="btn-link" onClick={onClear}>
+    <div className="flex flex-col items-center py-16 gap-3 text-[hsl(var(--muted-foreground))]">
+      <span className="text-4xl">🔍</span>
+      <p className="text-sm">Nothing matches your filters.</p>
+      <button
+        className="text-[hsl(var(--primary))] text-sm underline underline-offset-4 hover:opacity-80 transition-opacity"
+        onClick={onClear}
+      >
         Clear filters
       </button>
     </div>
