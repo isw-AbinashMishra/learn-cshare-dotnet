@@ -8,6 +8,7 @@ export default function Toolbar({
   onReset,
   total,
   visible,
+  hideLabel = "Hide reviewed",
 }) {
   return (
     <div className="toolbar">
@@ -36,16 +37,18 @@ export default function Toolbar({
           checked={hideReviewed}
           onChange={(e) => onToggleHide(e.target.checked)}
         />
-        Hide reviewed
+        {hideLabel}
       </label>
 
       <span className="toolbar__count">
         {visible} / {total}
       </span>
 
-      <button className="toolbar__reset" onClick={onReset} title="Reset all progress">
-        Reset progress
-      </button>
+      {onReset && (
+        <button className="toolbar__reset" onClick={onReset} title="Reset all progress">
+          Reset progress
+        </button>
+      )}
     </div>
   );
 }
