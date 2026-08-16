@@ -2,6 +2,7 @@ const TABS = [
   { id: "prep",       emoji: "📋", label: "Interview Prep" },
   { id: "challenges", emoji: "🧩", label: "Challenges" },
   { id: "playground", emoji: "🛝", label: "Playground" },
+  { id: "system-design", emoji: "🏗️", label: "System Design" },
 ];
 
 export default function ModeToggle({ mode, onChange }) {

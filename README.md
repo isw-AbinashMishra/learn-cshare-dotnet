@@ -37,12 +37,25 @@ cd portal
 npm run server                         # in a separate terminal, alongside `npm run dev`
 ```
 
+### System Design Notes (local only)
+
+The System Design section reads chapter notes cloned locally from [liquidslr/system-design-notes](https://github.com/liquidslr/system-design-notes) into `portal/public/system-design/` (gitignored — never committed). That repo has no LICENSE file and the notes are themselves derived from Alex Xu's *System Design Interview* books, so this stays local-only, not redistributed.
+
+```bash
+git clone --depth 1 https://github.com/liquidslr/system-design-notes.git portal/public/system-design
+rm -rf portal/public/system-design/.git
+```
+
+Without this clone, the section still renders but each chapter shows a "Notes not found locally" notice.
+
 ### Build for production
 
 ```bash
 npm run build
 # output in portal/dist/
 ```
+
+Note: `npm run build` copies everything under `public/` into `dist/`, including the cloned System Design notes if present. Don't deploy `dist/` publicly while that folder is populated.
 
 ## Tech Stack
 

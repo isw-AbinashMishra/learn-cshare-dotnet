@@ -2,12 +2,14 @@ import { useState, useMemo } from "react";
 import { questions, categories } from "./data/questions";
 import { challenges, challengeCategories } from "./data/challenges";
 import { snippets, playgroundCategories } from "./data/playground";
+import { systemDesignChapters, systemDesignCategories } from "./data/systemDesign";
 import { useProgress } from "./hooks/useProgress";
 import Sidebar from "./components/Sidebar";
 import Toolbar from "./components/Toolbar";
 import QuestionCard from "./components/QuestionCard";
 import ChallengeCard from "./components/ChallengeCard";
 import PlaygroundCard from "./components/PlaygroundCard";
+import SystemDesignCard from "./components/SystemDesignCard";
 import ModeToggle from "./components/ModeToggle";
 import "./App.css";
 
@@ -21,6 +23,7 @@ export default function App() {
 
   const { reviewed, toggle, reset } = useProgress();
   const { reviewed: solved, toggle: toggleSolved } = useProgress("solved_challenges");
+  const { reviewed: readChapters, toggle: toggleRead } = useProgress("system_design_read");
 
   const handleModeChange = (newMode) => {
     setMode(newMode);
@@ -81,25 +84,44 @@ export default function App() {
     });
   }, [activeCategory, search]);
 
+  const visibleChapters = useMemo(() => {
+    return systemDesignChapters.filter((c) => {
+      if (activeCategory && c.category !== activeCategory) return false;
+      if (search) {
+        const s = search.toLowerCase();
+        return c.title.toLowerCase().includes(s) || c.category.toLowerCase().includes(s);
+      }
+      return true;
+    });
+  }, [activeCategory, search]);
+
   const handleReset = () => {
     if (window.confirm("Reset all progress? This cannot be undone.")) reset();
   };
 
   const currentCategories =
-    mode === "prep" ? categories : mode === "challenges" ? challengeCategories : playgroundCategories;
+    mode === "prep" ? categories
+    : mode === "challenges" ? challengeCategories
+    : mode === "system-design" ? systemDesignCategories
+    : playgroundCategories;
 
   const currentTotal =
-    mode === "prep" ? questions.length : mode === "challenges" ? challenges.length : snippets.length;
+    mode === "prep" ? questions.length
+    : mode === "challenges" ? challenges.length
+    : mode === "system-design" ? systemDesignChapters.length
+    : snippets.length;
 
   const currentVisible =
-    mode === "prep" ? visibleQuestions.length : mode === "challenges" ? visibleChallenges.length : visibleSnippets.length;
+    mode === "prep" ? visibleQuestions.length
+    : mode === "challenges" ? visibleChallenges.length
+    : mode === "system-design" ? visibleChapters.length
+    : visibleSnippets.length;
 
   const headerTitle =
-    mode === "playground"
-      ? (activeCategory ?? "All Snippets")
-      : mode === "challenges"
-      ? (activeCategory ?? "All Challenges")
-      : (activeCategory ?? "All Topics");
+    mode === "playground" ? (activeCategory ?? "All Snippets")
+    : mode === "challenges" ? (activeCategory ?? "All Challenges")
+    : mode === "system-design" ? (activeCategory ?? "All Chapters")
+    : (activeCategory ?? "All Topics");
 
   return (
     <div className="flex min-h-screen bg-[hsl(var(--background))]">
@@ -115,7 +137,7 @@ export default function App() {
         mode={mode}
         activeCategory={activeCategory}
         onSelect={(cat) => { setActiveCategory(cat); setSidebarOpen(false); }}
-        reviewed={mode === "challenges" ? solved : reviewed}
+        reviewed={mode === "challenges" ? solved : mode === "system-design" ? readChapters : reviewed}
         categories={currentCategories}
         totalItems={currentTotal}
         isOpen={sidebarOpen}
@@ -138,7 +160,7 @@ export default function App() {
 
         <ModeToggle mode={mode} onChange={handleModeChange} />
 
-        {mode !== "playground" && (
+        {(mode === "prep" || mode === "challenges") && (
           <Toolbar
             search={search}
             onSearch={setSearch}
@@ -153,16 +175,16 @@ export default function App() {
           />
         )}
 
-        {mode === "playground" && (
+        {(mode === "playground" || mode === "system-design") && (
           <div className="flex flex-wrap gap-3 items-center px-4 md:px-6 py-3 border-b border-[hsl(var(--border))]">
             <input
               className="flex-1 min-w-[200px] bg-[hsl(var(--input))] border border-[hsl(var(--border))] text-[hsl(var(--foreground))] rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[hsl(var(--ring))] focus:ring-offset-0 placeholder:text-[hsl(var(--muted-foreground))] transition"
-              placeholder="Search snippets…"
+              placeholder={mode === "system-design" ? "Search chapters…" : "Search snippets…"}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
             <span className="text-xs text-[hsl(var(--muted-foreground))]">
-              {currentVisible} / {currentTotal} snippets
+              {currentVisible} / {currentTotal} {mode === "system-design" ? "chapters" : "snippets"}
             </span>
           </div>
         )}
@@ -191,6 +213,14 @@ export default function App() {
                 : visibleSnippets.map((s) => <PlaygroundCard key={s.id} snippet={s} />)}
               <PlaygroundFooter />
             </>
+          )}
+
+          {mode === "system-design" && (
+            visibleChapters.length === 0
+              ? <EmptyState onClear={() => setSearch("")} />
+              : visibleChapters.map((c) => (
+                  <SystemDesignCard key={c.id} chapter={c} isRead={readChapters.has(c.id)} onToggle={toggleRead} />
+                ))
           )}
         </div>
       </main>

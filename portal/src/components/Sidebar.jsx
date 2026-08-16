@@ -1,8 +1,9 @@
 import { questions } from "../data/questions";
 import { challenges } from "../data/challenges";
 import { snippets } from "../data/playground";
+import { systemDesignChapters } from "../data/systemDesign";
 
-const DATA_BY_MODE = { prep: questions, challenges, playground: snippets };
+const DATA_BY_MODE = { prep: questions, challenges, playground: snippets, "system-design": systemDesignChapters };
 
 export default function Sidebar({ mode = "prep", activeCategory, onSelect, reviewed, categories, totalItems, isOpen }) {
   const allItems  = DATA_BY_MODE[mode] ?? questions;
@@ -36,7 +37,7 @@ export default function Sidebar({ mode = "prep", activeCategory, onSelect, revie
         <div className="px-3 mb-5">
           <div className="flex justify-between items-center mb-1.5">
             <span className="text-[11px] text-[hsl(var(--muted-foreground))] uppercase tracking-wide">
-              {mode === "challenges" ? "Solved" : "Reviewed"}
+              {mode === "challenges" ? "Solved" : mode === "system-design" ? "Read" : "Reviewed"}
             </span>
             <span className="text-[11px] font-semibold text-[hsl(var(--primary))]">{pct}%</span>
           </div>
@@ -58,7 +59,12 @@ export default function Sidebar({ mode = "prep", activeCategory, onSelect, revie
       {/* Nav */}
       <nav className="flex flex-col gap-0.5 flex-1">
         <NavItem
-          label={mode === "playground" ? "All Snippets" : mode === "challenges" ? "All Challenges" : "All Topics"}
+          label={
+            mode === "playground" ? "All Snippets"
+            : mode === "challenges" ? "All Challenges"
+            : mode === "system-design" ? "All Chapters"
+            : "All Topics"
+          }
           count={total}
           done={showProgress ? doneCount : null}
           active={activeCategory === null}

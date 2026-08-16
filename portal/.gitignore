@@ -2,3 +2,6 @@ node_modules
 dist
 .env
 .env.local
+
+# Cloned reference notes (local-only, not ours to distribute — see README)
+public/system-design/
